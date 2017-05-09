@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorWhite">#ffffff</color>
+    <color name="mainColor">#0075C2</color>
+    <color name="orderColor">#ffA4D3EE</color>
+    <color name="colorRegBack">#F5F5F5</color>
+    <color name="colorTip">#CFCFCF</color>
+    <color name="colorBlack">#000000</color>
+
+    <item type="color" name="transparent">@android:color/transparent</item>
+    <color name="tab_text_color">#ff878afa</color>
+    <color name="black">#ff000000</color>
+    <color name="yellow">#fff08300</color>
+    <color name="grey_light0">#ff7d7d7d</color>
+    <color name="white">#ffffffff</color>
+    <color name="grey_dark4">#ff2d2d2d</color>
+    <color name="green">#ff9ff389</color>
+    <color name="orange">#fffcb187</color>
+    <color name="red">#ffff4200</color>
+    <color name="app_grey_light">#fff</color>
+    <color name="big_pic_backg">#88000000</color>
+    <color name="tab_menu_text_color_red">#fffb705d</color>
+    <color name="tab_menu_text_color_gray">#ff666666</color>
+    <color name="tab_account_text_color_gray">#ff969696</color>
+    <color name="tab_account_listview_item_red">#ffdb3c22</color>
+    <color name="tab_account_listview_item_green">#ff1574a4</color>
+    <color name="setting_text_color_gary">#ffaeaeae</color>
+    <color name="cursor_drawable_editext_color">#fffb705d</color>
+    <color name="sb__snack_bkgnd">#ffbfbfbf</color>
+    <color name="sb__transparent">#00000000</color>
+    <color name="sb__dim_white">#20ffffff</color>
+    <color name="sb__button_text_color">#fffb6541</color>
+
+    <!-- 二维码 -->
+    <color name="result_view">#b0000000</color>
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="possible_result_points">#c0ffff00</color>
+</resources>

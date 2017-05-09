@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="property">
+        <attr name="text" format="string"/>
+        <attr name="label" format="string"/>
+        <attr name="header" format="boolean"/>
+        <attr name="show_add" format="boolean"/>
+        <attr name="show" format="boolean"/>
+        <attr name="has_mark_text" format="boolean"/>
+        <attr name="has_go_img" format="boolean"/>
+        <attr name="show_text" format="string"/>
+        <attr name="show_hint" format="string"/>
+        <attr name="show_type" format="string"/>
+        <attr name="send_code_text" format="string"/>
+        <attr name="is_first" format="boolean"/>
+        <attr name="editable" format="boolean"/>
+        <attr name="mBackground" format="reference"/>
+        <attr name="text_gravity" format="string"/>
+    </declare-styleable>
+</resources>

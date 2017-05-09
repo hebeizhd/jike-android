@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">水木家装团购</string>
+    <string name="title_activity_login">登录</string>
+    <string name="title_activity_register">用户注册</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_phone">手机号</string>
+    <string name="prompt_code">验证码</string>
+    <string name="prompt_password">密码</string>
+    <string name="prompt_password_again">确认密码</string>
+    <string name="action_sign_in">登录</string>
+    <string name="action_to_register">点我注册</string>
+    <string name="action_to_forget">忘记密码</string>
+    <string name="action_register">注册</string>
+    <string name="scaner_title_str">将二维码放入框内, 即可自动扫描</string>
+    <string name="register_button_code_text">获取验证码</string>
+    <string name="action_ok">确定</string>
+    <string name="tongyixiyitext">我已同意...协议</string>
+
+    <string name="action_sign_out">退出登录</string>
+    <string name="load">加载更多▪▪▪</string>
+    <string name="scan_text">将二维码放入框内, 即可自动扫描</string>
+</resources>
