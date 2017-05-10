@@ -23,9 +23,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.jike.R;
+import com.jike.entity.QueryParam;
+import com.jike.utils.Constants;
 import com.jike.utils.File2Code;
 import com.jike.utils.FileUtils;
 import com.jike.utils.HttpUtils;
+import com.jike.utils.QueryTask;
 
 import java.io.File;
 
@@ -45,6 +48,8 @@ public class WebLoader extends BaseActivity {
 
     private ValueCallback<Uri> fileCallbackSingle;
     private ValueCallback<Uri[]> fileCallback;
+
+    private String callbackKey="";
 
 
     @Override
@@ -97,7 +102,7 @@ public class WebLoader extends BaseActivity {
     }
 
     private void reloadPage() {
-        webView.loadUrl(HttpUtils.getUrl("/#/index"));
+        webView.loadUrl(Constants.getUrl("/#/index"));
         //设置Web视图
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -106,12 +111,15 @@ public class WebLoader extends BaseActivity {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(intent);
                 } else if (url.startsWith("camera:")) {
+                    callbackKey = url.substring(9);
                     WebLoader.this.openCamera();
                 } else if (url.startsWith("chooser:")) {
+                    callbackKey = url.substring(10);
                     WebLoader.this.selectImage();
                 } else if (url.startsWith("http:") || url.startsWith("https:")) {
                     view.loadUrl(url);
                 }
+                Log.i("TAG","callbackKey="+callbackKey);
                 return true;
             }
         });
@@ -198,18 +206,51 @@ public class WebLoader extends BaseActivity {
         super.onDestroy();
     }
 
-    @SuppressLint("NewApi")
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if(resultCode == RESULT_OK){
             if (requestCode == REQUEST_CAMREA) {
-                pushSelectResult(mCameraFilePath);
+                uploadImage(mCameraFilePath);
             } else if (requestCode == REQUEST_SELECT_FILE) {
                 Uri uri = intent.getData();
-                pushSelectResult(getRealPathFromURI(uri));
+                uploadImage(getRealPathFromURI(uri));
             }
+        }else{
+            pushSelectResult("",callbackKey);
         }
     }
+
+    public void uploadImage(String path){
+        //上传图片QueryTask
+        String imageData = File2Code.bitmapToBase64(path);
+        QueryParam queryParam = new QueryParam();
+        queryParam.put("imageData",imageData);
+        new QueryTask<>(uploadPhotoHandler,"oss/upload/image/base64",String.class).execute(queryParam);
+    }
+
+    private QueryTask.CallBack<String> uploadPhotoHandler = new QueryTask.CallBack<String>() {
+        @Override
+        public void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        public void onCancelExecute() {
+            super.onCancelExecute();
+        }
+
+        @Override
+        public void onSuccess(String s) {
+            pushSelectResult(HttpUtils.getImageUrl(s), callbackKey);
+        }
+
+        @Override
+        public void onFail(String msg) {
+            super.onFail(msg);
+            pushSelectResult("",callbackKey);
+        }
+    };
+
 
     public String getRealPathFromURI(Uri contentUri) {
         String[] proj = { MediaStore.Images.Media.DATA };
@@ -262,7 +303,7 @@ public class WebLoader extends BaseActivity {
         String mCameraFilePath = FileUtils.getCameraPhotoPath();
         this.mCameraFilePath = mCameraFilePath;
         cameraIntent.putExtra(MediaStore.Images.Media.ORIENTATION, 0);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(new File(mCameraFilePath)));
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(mCameraFilePath)));
         return cameraIntent;
     }
 
@@ -271,7 +312,7 @@ public class WebLoader extends BaseActivity {
         String mCameraFilePath = FileUtils.getCameraPhotoPath();
         this.mCameraFilePath = mCameraFilePath;
         cameraIntent.putExtra(MediaStore.Images.Media.ORIENTATION, 0);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(new File(mCameraFilePath)));
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(mCameraFilePath)));
         startActivityForResult(cameraIntent, REQUEST_CAMREA);
         return "true";
     }
@@ -282,10 +323,10 @@ public class WebLoader extends BaseActivity {
         startActivityForResult(intent, REQUEST_SELECT_FILE);
         return "true";
     }
-    public String pushSelectResult(String url){
+    public String pushSelectResult(String url,String key){
 //        String imageData = File2Code.bitmapToBase64(url);
 //        Log.i("TAG","imageData==========="+imageData);
-        webView.loadUrl("javascript:onFileSelected('" + url + "')");
+        webView.loadUrl("javascript:onFileSelected('" + url + "','" + key + "')");
         return null;
     }
 }
