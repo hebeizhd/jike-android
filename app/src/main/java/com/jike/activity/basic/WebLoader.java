@@ -79,6 +79,8 @@ public class WebLoader extends BaseActivity {
             String appCachePath = getApplicationContext().getCacheDir().getAbsolutePath();
             webSettings.setAppCachePath(appCachePath);
             webSettings.setAppCacheEnabled(true);
+            String ua = webSettings.getUserAgentString();
+            webSettings.setUserAgentString(ua+":jikeWeb");
 
             //屏蔽长按粘贴复制
             webView.setOnLongClickListener(new View.OnLongClickListener() {
