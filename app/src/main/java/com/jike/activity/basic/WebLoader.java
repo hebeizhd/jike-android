@@ -3,8 +3,10 @@ package com.jike.activity.basic;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -215,7 +217,9 @@ public class WebLoader extends BaseActivity {
                 uploadImage(mCameraFilePath);
             } else if (requestCode == REQUEST_SELECT_FILE) {
                 Uri uri = intent.getData();
-                uploadImage(getRealPathFromURI(uri));
+                Uri uri1 = Uri.parse(uri.toString().replace("%3A","/"));
+                Log.i("TAG","path ========="+getRealPathFromURI(this, uri1));
+                uploadImage(getRealPathFromURI(this,uri1));
             }
         }else{
             pushSelectResult("",callbackKey);
@@ -254,12 +258,23 @@ public class WebLoader extends BaseActivity {
     };
 
 
-    public String getRealPathFromURI(Uri contentUri) {
-        String[] proj = { MediaStore.Images.Media.DATA };
-        Cursor cursor = managedQuery(contentUri, proj, null, null, null);
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        return cursor.getString(column_index);
+    public String getRealPathFromURI( final Context context,final Uri uri) {
+        if ( null == uri ) return null;
+        final String scheme = uri.getScheme();
+        String data = null;
+        if ( scheme == null )
+            data = uri.getPath();
+        else if ( ContentResolver.SCHEME_FILE.equals( scheme ) ) {
+            data = uri.getPath();
+        } else if ( ContentResolver.SCHEME_CONTENT.equals( scheme ) ) {
+            String[] proj = { MediaStore.Images.Media.DATA };
+            CursorLoader loader = new CursorLoader(context, uri, proj, null, null, null);
+            Cursor cursor = loader.loadInBackground();
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            data= cursor.getString(column_index);
+        }
+        return data;
     }
 
     public static Uri getImageContentUri(Context context, java.io.File imageFile) {
@@ -319,9 +334,7 @@ public class WebLoader extends BaseActivity {
         return "true";
     }
     public String selectImage(){
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, REQUEST_SELECT_FILE);
         return "true";
     }

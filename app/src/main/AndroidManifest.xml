@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.jike.activity.basic.WebLoader" ></activity>
+        <activity android:name="com.jike.activity.basic.WebLoader" android:exported="true"></activity>
 
     </application>
     <!-- 权限-->
@@ -28,6 +28,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 写入SD卡权限  -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
     <!-- 读取手机设备信息权限 -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
