@@ -11,7 +11,7 @@ public class Constants {
     public static final String DEALER_MOBILE_URL_ROOT = "http://sj.jikejiazhuang.com/jike-mobile";
     //public static final String API_URL_ROOT = "http://192.168.0.14:8089";
     //public static final String DEALER_MOBILE_URL_ROOT = "http://192.168.0.14:8080/jike-mobile";
-    public static final String IMAGE_URL_ROOT = "http://jk-images.oss-cn-shanghai.aliyuncs.com";
+    public static final String IMAGE_URL_ROOT = "http://img.jikejiazhuang.com";
     public static final String LOCAL_FILE_ROOT = "/file/";
 
     public static final int LOCAL_RATE = 1000000;

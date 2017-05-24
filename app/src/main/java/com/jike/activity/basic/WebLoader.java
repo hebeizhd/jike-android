@@ -8,10 +8,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -30,9 +32,11 @@ import com.jike.utils.Constants;
 import com.jike.utils.File2Code;
 import com.jike.utils.FileUtils;
 import com.jike.utils.HttpUtils;
+import com.jike.utils.PermissionCheck;
 import com.jike.utils.QueryTask;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -81,6 +85,7 @@ public class WebLoader extends BaseActivity {
             String appCachePath = getApplicationContext().getCacheDir().getAbsolutePath();
             webSettings.setAppCachePath(appCachePath);
             webSettings.setAppCacheEnabled(true);
+
             String ua = webSettings.getUserAgentString();
             webSettings.setUserAgentString(ua+":jikeWeb");
 
@@ -131,57 +136,6 @@ public class WebLoader extends BaseActivity {
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
                 return super.onJsAlert(view, url, message, result);
-            }
-
-            //The undocumented magic method override
-            //Eclipse will swear at you if you try to put @Override here
-            // For Android 3.0+
-            public void openFileChooser(ValueCallback<Uri> uploadMsg) {
-
-                fileCallbackSingle = uploadMsg;
-                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("image/*");
-                WebLoader.this.startActivityForResult(Intent.createChooser(i, "选择图片"), WebLoader.this.REQUEST_SELECT_FILE_SINGLE);
-
-            }
-
-            // For Android 3.0+
-            public void openFileChooser(ValueCallback uploadMsg, String acceptType) {
-                fileCallbackSingle = uploadMsg;
-                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("*/*");
-                WebLoader.this.startActivityForResult(Intent.createChooser(i, "选择图片"), WebLoader.this.REQUEST_SELECT_FILE_SINGLE);
-            }
-
-            //For Android 4.1
-            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
-                fileCallbackSingle = uploadMsg;
-                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("image/*");
-                WebLoader.this.startActivityForResult(Intent.createChooser(i, "选择图片"), WebLoader.this.REQUEST_SELECT_FILE_SINGLE);
-
-            }
-
-            //For Android 5.0
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-                // make sure there is no existing message
-                if (fileCallback != null) {
-                    fileCallback.onReceiveValue(null);
-                    fileCallback = null;
-                }
-                fileCallback = filePathCallback;
-                Intent intent = fileChooserParams.createIntent();
-                try {
-                    WebLoader.this.startActivityForResult(intent, WebLoader.this.REQUEST_SELECT_FILE);
-                } catch (ActivityNotFoundException e) {
-                    WebLoader.this.fileCallback = null;
-                    return false;
-                }
-                return true;
             }
         });
     }
@@ -299,40 +253,50 @@ public class WebLoader extends BaseActivity {
         }
     }
 
-
-    private Intent createDefaultOpenableIntent() {
-        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-        i.addCategory(Intent.CATEGORY_OPENABLE);
-        i.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"image/*");
-        Intent chooser = createChooserIntent(createCameraIntent());
-        chooser.putExtra(Intent.EXTRA_INTENT, i);
-        return chooser;
-    }
-    private Intent createChooserIntent(Intent... intents) {
-        Intent chooser = new Intent(Intent.ACTION_CHOOSER);
-        chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, intents);
-        chooser.putExtra(Intent.EXTRA_TITLE, "选择图片");
-        return chooser;
-    }
-    @SuppressWarnings("static-access")
-    private Intent createCameraIntent() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        String mCameraFilePath = FileUtils.getCameraPhotoPath();
-        this.mCameraFilePath = mCameraFilePath;
-        cameraIntent.putExtra(MediaStore.Images.Media.ORIENTATION, 0);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(mCameraFilePath)));
-        return cameraIntent;
-    }
-
     public String openCamera(){
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        String mCameraFilePath = FileUtils.getCameraPhotoPath();
-        this.mCameraFilePath = mCameraFilePath;
-        cameraIntent.putExtra(MediaStore.Images.Media.ORIENTATION, 0);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(mCameraFilePath)));
-        startActivityForResult(cameraIntent, REQUEST_CAMREA);
+        PermissionCheck.checkPermission(this, PermissionCheck.CAMERA_PERMISSION_TYPE, REQUEST_CAMREA);
         return "true";
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if(requestCode == REQUEST_CAMREA){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+
+                //獲取系統版本
+                int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+                // 激活相机
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                // 判断存储卡是否可以用，可用进行存储
+                String state = Environment.getExternalStorageState();
+
+                if (state.equals(Environment.MEDIA_MOUNTED)) {
+                    String filePath = FileUtils.getCameraPhotoPath();
+                    this.mCameraFilePath = filePath;
+                    File tempFile = new File(filePath);
+                    if (currentapiVersion < 24) {
+                        // 从文件中创建uri
+                        Uri uri = Uri.fromFile(tempFile);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                    } else {
+                        //兼容android7.0 使用共享文件的形式
+                        ContentValues contentValues = new ContentValues(1);
+                        contentValues.put(MediaStore.Images.Media.DATA, tempFile.getAbsolutePath());
+                        Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                    }
+                } else {
+                    showLongToastMessage("请确认已经插入SD卡");
+                }
+                // 开启一个带有返回值的Activity，请求码为REQUEST_CAMREA
+                startActivityForResult(intent, REQUEST_CAMREA);
+
+            }
+        }else{
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
     public String selectImage(){
         Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, REQUEST_SELECT_FILE);
